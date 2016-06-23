@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PCPInstance>
+  <Pair name="1" first="bba" second="b" />
+  <Pair name="2" first="ba" second="baa" />
+  <Pair name="3" first="ba" second="aba" />
+  <Pair name="4" first="ab" second="bba" />
+</PCPInstance>
