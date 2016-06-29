@@ -10,25 +10,28 @@
 using namespace pcpsolver;
 
 
-solution_t pcpsolver::check(const PCPInstance &instance, const std::vector<std::string> &indices) {
+solution_t pcpsolver::check(PCPInstance const& instance,
+                            std::vector<std::string> const& indices) {
 
   // An empty list of indices can possibly be extended to a solution.
   if (indices.empty()) {
-    return EXTENSION_POSSIBLE; } 
+    return EXTENSION_POSSIBLE;
+  }
+
   std::string firstW = "";
   std::string secondW = "";
 
-  for (const auto &i : indices) {
-    const auto &pair = instance.get_pair(i);
+  for (auto const& i : indices) {
+    auto const& pair = instance.get_pair(i);
     firstW += pair.first;
     secondW += pair.second;
   }
 
   // Check whether the first word is a prefix of the second word.
-  bool firstPrefixOfSecond = std::equal(firstW.begin(), firstW.end(), secondW.begin());
+  bool const firstPrefixOfSecond = std::equal(firstW.begin(), firstW.end(), secondW.begin());
 
   // Check whether the second word is a prefix of the first word.
-  bool secondPrefixOfFirst = std::equal(secondW.begin(), secondW.end(), firstW.begin());
+  bool const secondPrefixOfFirst = std::equal(secondW.begin(), secondW.end(), firstW.begin());
 
   if (firstPrefixOfSecond && secondPrefixOfFirst) {
 
@@ -48,9 +51,11 @@ solution_t pcpsolver::check(const PCPInstance &instance, const std::vector<std::
 
 
 // Helper function for traversing the search tree.
-void traverse_tree(const PCPInstance &instance, std::vector<std::string> &root, int maxLevel) {
+void traverse_tree(PCPInstance const& instance,
+                   std::vector<std::string>& root,
+                   int maxLevel) {
 
-  const auto prune = check(instance, root);
+  auto const prune = check(instance, root);
 
   if (prune == SOLUTION) {
     throw root;
@@ -58,7 +63,7 @@ void traverse_tree(const PCPInstance &instance, std::vector<std::string> &root, 
 
   if (prune == EXTENSION_POSSIBLE && root.size() < maxLevel) {
 
-    for (const auto &i : instance.get_list_of_indices()) {
+    for (auto const& i : instance.get_list_of_indices()) {
       root.push_back(i);
       traverse_tree(instance, root, maxLevel);
       root.pop_back();
@@ -66,18 +71,18 @@ void traverse_tree(const PCPInstance &instance, std::vector<std::string> &root, 
   }
 }
 
-std::vector<std::string> pcpsolver::solve(const PCPInstance &instance) {
+std::vector<std::string> pcpsolver::solve(PCPInstance const& instance) {
 
   try {
 
-    int maxLevel = 0;
+    int maxLevel = 1;
     std::vector<std::string> root;
     while (true) {
-      maxLevel++;
+      ++maxLevel;
       traverse_tree(instance, root, maxLevel);
     }
 
-  } catch (const std::vector<std::string> &solution) {
+  } catch (std::vector<std::string> const& solution) {
 
     return solution;
   }

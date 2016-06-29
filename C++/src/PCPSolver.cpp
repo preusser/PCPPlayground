@@ -16,14 +16,14 @@
 using namespace pcpsolver;
 
 
-void print_usage(std::string prgName, std::string errorMsg) {
+void print_usage(std::string const& prgName, std::string const& errorMsg) {
 
   std::cout << "Usage: "   << prgName  << " [filepath]" << std::endl
             << "  Error: " << errorMsg << std::endl;
 }
 
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
 
   std::string prgName = argv[0];
 
@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
     std::cout << "Found solution of length " << solution.size() << ": ";
 
     bool first = true;
-    for (const auto &i : solution) {
+    for (auto const& i : solution) {
 
       if (first) {
         first = false;
@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
 
     std::cout << std::endl;
 
-  } catch (const std::exception &e) {
+  } catch (std::exception const& e) {
 
     print_usage(prgName, e.what());
     return EXIT_FAILURE;

@@ -18,7 +18,9 @@ PCPInstance::~PCPInstance() {
 }
 
 
-void PCPInstance::add_pair(const std::string &index, const std::string &first, const std::string &second) {
+void PCPInstance::add_pair(std::string const& index,
+                           std::string const& first,
+                           std::string const& second) {
 
   const auto pair = std::make_pair(first, second);
 
@@ -31,11 +33,11 @@ void PCPInstance::add_pair(const std::string &index, const std::string &first, c
   m_instance[index] = pair;
 }
 
-const std::pair<std::string, std::string> &PCPInstance::get_pair(const std::string &index) const {
+std::pair<std::string, std::string> const& PCPInstance::get_pair(std::string const& index) const {
 
   return m_instance.at(index);
 }
 
-const std::vector<std::string> &PCPInstance::get_list_of_indices() const {
+std::vector<std::string> const& PCPInstance::get_list_of_indices() const {
   return m_indices;
 }

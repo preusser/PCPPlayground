@@ -55,7 +55,9 @@ public:
    * @param first The first word.
    * @param second The second word.
    */
-  void add_pair(const std::string &index, const std::string &first, const std::string &second);
+  void add_pair(std::string const& index,
+                std::string const& first,
+                std::string const& second);
 
   /**
    * This method is used to retrieve the word pair at the specified index.
@@ -64,14 +66,14 @@ public:
    * @returns The word pair at specified index.
    * @throws Exception if there is no word pair with the specified index.
    */
-  const std::pair<std::string, std::string> &get_pair(const std::string &index) const;
+  std::pair<std::string, std::string> const& get_pair(std::string const& index) const;
 
   /**
    * This method returns the list of indices of the PCP instance.
    *
    * @returns List of indices.
    */
-  const std::vector<std::string> &get_list_of_indices() const;
+  std::vector<std::string> const& get_list_of_indices() const;
 };
 
 } // namespace pcpsolver
