@@ -8,6 +8,7 @@
 #include "PCPXmlReader.h"
 
 #include <iostream>
+#include <memory>
 #include <stdexcept>
 #include <libxml++/libxml++.h>
 
@@ -37,7 +38,7 @@ PCPInstance* pcpsolver::read_pcp_instance_from_xml_file(std::string const& filep
   auto const root = throw_exception_if_nullptr(doc->get_root_node(),
                        "Could not get root node");
 
-  std::unique_ptr<PCPInstance> instance(new PCPInstance());
+  auto instance = std::make_unique<PCPInstance>();
 
   for (auto const node : root->find("/PCPInstance/Pair")) {
 

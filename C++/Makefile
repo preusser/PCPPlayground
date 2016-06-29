@@ -12,12 +12,12 @@ INCLUDEDIR  = include
 BUILDDIR    = build
 
 CXX         = g++
-CXXFLAGS    = -O3 -Wall -std=gnu++11 -I $(INCLUDEDIR) -c
-LDFLAGS     =
 
 LIBXML      = libxml++-2.6
-CXXFLAGS   += $(shell pkg-config --cflags --libs $(LIBXML))
-LDFLAGS    += $(shell pkg-config --cflags --libs $(LIBXML))
+CXXFLAGS    = $(shell pkg-config --cflags --libs $(LIBXML))
+LDFLAGS     = $(shell pkg-config --cflags --libs $(LIBXML))
+
+CXXFLAGS   += -O3 -Wall -std=gnu++14 -I $(INCLUDEDIR) -c
 
 TARGET      = $(BINDIR)/PCPSolver
 FILES       = $(wildcard $(SRCDIR)/*.cpp)
