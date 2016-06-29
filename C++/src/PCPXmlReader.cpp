@@ -37,7 +37,7 @@ PCPInstance* pcpsolver::read_pcp_instance_from_xml_file(std::string const& filep
   auto const root = throw_exception_if_nullptr(doc->get_root_node(),
                        "Could not get root node");
 
-  PCPInstance *instance = new PCPInstance();
+  std::unique_ptr<PCPInstance> instance(new PCPInstance());
 
   for (auto const node : root->find("/PCPInstance/Pair")) {
 
@@ -60,5 +60,5 @@ PCPInstance* pcpsolver::read_pcp_instance_from_xml_file(std::string const& filep
     instance->add_pair(index, first, second);
   }
 
-  return instance;
+  return instance.release();
 }
