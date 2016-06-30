@@ -38,7 +38,7 @@ typedef enum {
  *            to a solution, and
  *          NOT_SOLUTION otherwise.
  */
-solution_t check(PCPInstance const& instance, std::vector<std::string> const& indices);
+solution_t check(PCPInstance const& instance, indices_t const& indices);
 
 /**
  * This function `solves' a given PCP instance using iterative DFS.
@@ -48,7 +48,7 @@ solution_t check(PCPInstance const& instance, std::vector<std::string> const& in
  * @param instance The PCP instance.
  * @returns The solution, which is a list of indices.
  */
-std::vector<std::string> solve(PCPInstance const& instance);
+indices_t solve(PCPInstance const& instance);
 
 
 } // namespace pcpsolver

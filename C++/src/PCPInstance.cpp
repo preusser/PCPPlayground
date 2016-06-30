@@ -33,11 +33,11 @@ void PCPInstance::add_pair(std::string const& index,
   instance_[index] = pair;
 }
 
-std::pair<std::string, std::string> const& PCPInstance::get_pair(std::string const& index) const {
+wordpair_t const& PCPInstance::get_pair(std::string const& index) const {
 
   return instance_.at(index);
 }
 
-std::vector<std::string> const& PCPInstance::get_list_of_indices() const {
+indices_t const& PCPInstance::get_list_of_indices() const {
   return indices_;
 }

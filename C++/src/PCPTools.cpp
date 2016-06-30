@@ -11,7 +11,7 @@ using namespace pcpsolver;
 
 
 solution_t pcpsolver::check(PCPInstance const& instance,
-                            std::vector<std::string> const& indices) {
+                            indices_t const& indices) {
 
   // An empty list of indices can possibly be extended to a solution.
   if (indices.empty()) {
@@ -52,7 +52,7 @@ solution_t pcpsolver::check(PCPInstance const& instance,
 
 // Helper function for traversing the search tree.
 void traverse_tree(PCPInstance const& instance,
-                   std::vector<std::string>& root,
+                   indices_t& root,
                    int maxLevel) {
 
   auto const prune = check(instance, root);
@@ -71,18 +71,18 @@ void traverse_tree(PCPInstance const& instance,
   }
 }
 
-std::vector<std::string> pcpsolver::solve(PCPInstance const& instance) {
+indices_t pcpsolver::solve(PCPInstance const& instance) {
 
   try {
 
     int maxLevel = 1;
-    std::vector<std::string> root;
+    indices_t root;
     while (true) {
       ++maxLevel;
       traverse_tree(instance, root, maxLevel);
     }
 
-  } catch (std::vector<std::string> const& solution) {
+  } catch (indices_t const& solution) {
 
     return solution;
   }

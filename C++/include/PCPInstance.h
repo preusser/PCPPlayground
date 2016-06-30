@@ -16,6 +16,17 @@
 
 namespace pcpsolver {
 
+
+/**
+ * This type defines a list of indices.
+ */
+typedef std::vector<std::string> indices_t;
+
+/**
+ * This type defines a word pair.
+ */
+typedef std::pair<std::string, std::string> wordpair_t;
+
 /**
  * This class describes a PCP instance.
  */
@@ -26,12 +37,12 @@ private:
   /**
    * The internal data structure for a PCP instance.
    */
-  std::map<std::string, std::pair<std::string, std::string>> instance_;
+  std::map<std::string, wordpair_t> instance_;
 
   /**
    * The list of indices of the PCP instance.
    */
-  std::vector<std::string> indices_;
+  indices_t indices_;
 
 public:
 
@@ -66,14 +77,14 @@ public:
    * @returns The word pair at specified index.
    * @throws Exception if there is no word pair with the specified index.
    */
-  std::pair<std::string, std::string> const& get_pair(std::string const& index) const;
+  wordpair_t const& get_pair(std::string const& index) const;
 
   /**
    * This method returns the list of indices of the PCP instance.
    *
    * @returns List of indices.
    */
-  std::vector<std::string> const& get_list_of_indices() const;
+  indices_t const& get_list_of_indices() const;
 };
 
 } // namespace pcpsolver
