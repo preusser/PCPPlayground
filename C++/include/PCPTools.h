@@ -9,6 +9,7 @@
 #define PCPTOOLS_H
 
 #include <string>
+#include <experimental/optional>
 #include <vector>
 
 #include "PCPInstance.h"
@@ -18,32 +19,24 @@ namespace pcpsolver {
 
 
 /**
- * This type decribes a three-valued truth value.
- */
-typedef enum {
-  SOLUTION,
-  EXTENSION_POSSIBLE,
-  NOT_SOLUTION
-} solution_t;
-
-
-/**
  * This function checks whether a given list of indices is a solution to a
  * given PCP instance.
  *
  * @param instance The PCP instance.
- * @param indices The proposed solution.
- * @returns SOLUTION if the list of indices is a solution,
- *          EXTENSION_POSSIBLE if the list of indices can possibly be extended
- *            to a solution, and
- *          NOT_SOLUTION otherwise.
+ * @param indices The list of indices to check.
+ * @returns If a solution is found, it returns an optional object that does not
+ *   contain a value. Otherwise it returns an optional object containing a list
+ *   of list of indices that need to be checked for a solution.  This list may
+ *   be empty.
  */
-solution_t check(PCPInstance const& instance, indices_t const& indices);
+std::experimental::optional<std::vector<indices_t>> check_indices(PCPInstance const& instance,
+                                                                  indices_t const& indices);
+
 
 /**
- * This function `solves' a given PCP instance using iterative DFS.
+ * This function `solves' a given PCP instance using BFS.
  *
- * Note that the function does not return if there is no solution.
+ * Note that the function does not necessarily return if there is no solution.
  *
  * @param instance The PCP instance.
  * @returns The solution, which is a list of indices.

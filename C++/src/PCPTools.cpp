@@ -10,80 +10,83 @@
 using namespace pcpsolver;
 
 
-solution_t pcpsolver::check(PCPInstance const& instance,
-                            indices_t const& indices) {
+std::experimental::optional<std::vector<indices_t>> pcpsolver::check_indices(PCPInstance const& instance,
+                                                                             indices_t const& indices) {
 
-  // An empty list of indices can possibly be extended to a solution.
-  if (indices.empty()) {
-    return EXTENSION_POSSIBLE;
-  }
+  if (!indices.empty()) {
 
-  std::string firstW = "";
-  std::string secondW = "";
+    std::string firstW = "";
+    std::string secondW = "";
 
-  for (auto const& i : indices) {
-    auto const& pair = instance.get_pair(i);
-    firstW += pair.first;
-    secondW += pair.second;
-  }
+    for (auto const& i : indices) {
+      auto const& pair = instance.get_pair(i);
+      firstW += pair.first;
+      secondW += pair.second;
+    }
 
-  // Check whether the first word is a prefix of the second word.
-  bool const firstPrefixOfSecond = std::equal(firstW.begin(), firstW.end(), secondW.begin());
+    // Check whether the first word is a prefix of the second word.
+    bool const firstPrefixOfSecond = std::equal(std::begin(firstW), std::end(firstW), std::begin(secondW));
 
-  // Check whether the second word is a prefix of the first word.
-  bool const secondPrefixOfFirst = std::equal(secondW.begin(), secondW.end(), firstW.begin());
+    // Check whether the second word is a prefix of the first word.
+    bool const secondPrefixOfFirst = std::equal(std::begin(secondW), std::end(secondW), std::begin(firstW));
 
-  if (firstPrefixOfSecond && secondPrefixOfFirst) {
+    if (firstPrefixOfSecond && secondPrefixOfFirst) {
 
-    // Words are equal
-    return SOLUTION;
+      // Words are equal.
+      return std::experimental::nullopt;
 
-  } else if (!firstPrefixOfSecond && !secondPrefixOfFirst) {
+    } else if (!firstPrefixOfSecond && !secondPrefixOfFirst) {
 
-    return NOT_SOLUTION;
-
-  } else {
-
-    return EXTENSION_POSSIBLE;
-  }
-
-}
-
-
-// Helper function for traversing the search tree.
-void traverse_tree(PCPInstance const& instance,
-                   indices_t& root,
-                   int maxLevel) {
-
-  auto const prune = check(instance, root);
-
-  if (prune == SOLUTION) {
-    throw root;
-  }
-
-  if (prune == EXTENSION_POSSIBLE && root.size() < maxLevel) {
-
-    for (auto const& i : instance.get_list_of_indices()) {
-      root.push_back(i);
-      traverse_tree(instance, root, maxLevel);
-      root.pop_back();
+      // This sequence of indices cannot be extended to a solution.
+      return std::experimental::make_optional(std::vector<indices_t>());
     }
   }
+
+  // Consider all successor nodes, since sequence of indices can possibly be
+  // extended to a solution.
+  std::vector<indices_t> nextIndices;
+  for (auto const& i : instance.get_list_of_indices()) {
+    auto next = indices;
+    next.push_back(i);
+    nextIndices.push_back(next);
+  }
+
+  return std::experimental::make_optional(nextIndices);
 }
+
+
+// Helper function for traversing the search space.
+indices_t traverse_search_space(PCPInstance const& instance,
+                                std::vector<indices_t>& roots) {
+
+  std::vector<indices_t> nextRoots;
+  for (auto const& root : roots) {
+
+    auto const nextIndices = check_indices(instance, root);
+    if (nextIndices) {
+
+      // Add new indices to search space
+      nextRoots.insert(std::end(nextRoots),
+                       std::begin(nextIndices.value()),
+                       std::end(nextIndices.value()));
+
+    } else {
+
+      // Solution found.
+      return root;
+    }
+  }
+
+  // No solution found (yet), try next roots.
+  return traverse_search_space(instance, nextRoots);
+}
+
 
 indices_t pcpsolver::solve(PCPInstance const& instance) {
 
-  try {
+  std::vector<indices_t> startRoots;
+  indices_t start;
+  startRoots.push_back(start);
 
-    int maxLevel = 1;
-    indices_t root;
-    while (true) {
-      ++maxLevel;
-      traverse_tree(instance, root, maxLevel);
-    }
-
-  } catch (indices_t const& solution) {
-
-    return solution;
-  }
+  return traverse_search_space(instance, startRoots);
 }
