@@ -26,12 +26,12 @@ private:
   /**
    * The internal data structure for a PCP instance.
    */
-  std::map<std::string, std::pair<std::string, std::string>> m_instance;
+  std::map<std::string, std::pair<std::string, std::string>> instance_;
 
   /**
    * The list of indices of the PCP instance.
    */
-  std::vector<std::string> m_indices;
+  std::vector<std::string> indices_;
 
 public:
 
