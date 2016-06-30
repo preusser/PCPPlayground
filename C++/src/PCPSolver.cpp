@@ -5,7 +5,7 @@
  * Copyright (c) 2016 by Marcel Lippmann.  All rights reserved.               *
  *                                                                            *
  ******************************************************************************/
-#include "PCPTools.h"
+#include "PCPSolver.h"
 
 using namespace pcpsolver;
 

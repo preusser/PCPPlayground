@@ -10,7 +10,7 @@
 #include <string>
 
 #include "PCPInstance.h"
-#include "PCPTools.h"
+#include "PCPSolver.h"
 #include "PCPXmlReader.h"
 
 using namespace pcpsolver;

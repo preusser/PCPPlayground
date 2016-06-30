@@ -5,8 +5,8 @@
  * Copyright (c) 2016 by Marcel Lippmann.  All rights reserved.               *
  *                                                                            *
  ******************************************************************************/
-#ifndef PCPTOOLS_H
-#define PCPTOOLS_H
+#ifndef PCPSOLVER_H
+#define PCPSOLVER_H
 
 #include <string>
 #include <experimental/optional>
@@ -47,4 +47,4 @@ indices_t solve(PCPInstance const& instance);
 } // namespace pcpsolver
 
 
-#endif // PCPTOOLS_H
+#endif // PCPSOLVER_H
