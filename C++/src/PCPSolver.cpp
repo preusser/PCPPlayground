@@ -10,8 +10,15 @@
 using namespace pcpsolver;
 
 
-std::experimental::optional<std::vector<indices_t>> pcpsolver::check_indices(PCPInstance const& instance,
-                                                                             indices_t const& indices) {
+PCPSolver::PCPSolver(PCPInstance const& instance) : instance_(instance) {
+}
+
+
+PCPSolver::~PCPSolver() {
+}
+
+
+std::experimental::optional<std::vector<indices_t>> PCPSolver::check_indices(indices_t const& indices) const {
 
   if (!indices.empty()) {
 
@@ -19,7 +26,7 @@ std::experimental::optional<std::vector<indices_t>> pcpsolver::check_indices(PCP
     std::string secondW = "";
 
     for (auto const& i : indices) {
-      auto const& pair = instance.get_pair(i);
+      auto const& pair = instance_.get_pair(i);
       firstW += pair.first;
       secondW += pair.second;
     }
@@ -45,7 +52,7 @@ std::experimental::optional<std::vector<indices_t>> pcpsolver::check_indices(PCP
   // Consider all successor nodes, since sequence of indices can possibly be
   // extended to a solution.
   std::vector<indices_t> nextIndices;
-  for (auto const& i : instance.get_list_of_indices()) {
+  for (auto const& i : instance_.get_list_of_indices()) {
     auto next = indices;
     next.push_back(i);
     nextIndices.push_back(next);
@@ -55,14 +62,12 @@ std::experimental::optional<std::vector<indices_t>> pcpsolver::check_indices(PCP
 }
 
 
-// Helper function for traversing the search space.
-indices_t traverse_search_space(PCPInstance const& instance,
-                                std::vector<indices_t>& roots) {
+std::experimental::optional<indices_t> PCPSolver::traverse_search_space(std::vector<indices_t>& roots) const {
 
   std::vector<indices_t> nextRoots;
   for (auto const& root : roots) {
 
-    auto const nextIndices = check_indices(instance, root);
+    auto const nextIndices = check_indices(root);
     if (nextIndices) {
 
       // Add new indices to search space
@@ -73,20 +78,27 @@ indices_t traverse_search_space(PCPInstance const& instance,
     } else {
 
       // Solution found.
-      return root;
+      return std::experimental::make_optional(root);
     }
   }
 
-  // No solution found (yet), try next roots.
-  return traverse_search_space(instance, nextRoots);
+  // No solution found (yet), try next roots if there are any.
+  if (nextRoots.empty()) {
+
+    return std::experimental::nullopt;
+
+  } else {
+
+    return traverse_search_space(nextRoots);
+  }
 }
 
 
-indices_t pcpsolver::solve(PCPInstance const& instance) {
+std::experimental::optional<indices_t> PCPSolver::solve() const {
 
   std::vector<indices_t> startRoots;
   indices_t start;
   startRoots.push_back(start);
 
-  return traverse_search_space(instance, startRoots);
+  return traverse_search_space(startRoots);
 }

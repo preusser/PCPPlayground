@@ -7,6 +7,7 @@
  ******************************************************************************/
 #include <cstdlib>
 #include <iostream>
+#include <memory>
 #include <string>
 
 #include "PCPInstance.h"
@@ -36,25 +37,34 @@ int main(int argc, char* argv[]) {
 
   try {
 
-    auto pcpInstance = read_pcp_instance_from_xml_file(xmlFilepath);
+    auto const pcpInstance = read_pcp_instance_from_xml_file(xmlFilepath);
 
-    auto solution = solve(*pcpInstance);
+    auto pcpSolver = std::make_unique<PCPSolver>(*pcpInstance);
+    auto solution = pcpSolver->solve();
+    pcpSolver.reset();
 
-    std::cout << "Found solution of length " << solution.size() << ": ";
+    if (solution) {
 
-    bool first = true;
-    for (auto const& i : solution) {
+      std::cout << "Found solution of length " << solution.value().size() << ": ";
 
-      if (first) {
-        first = false;
-      } else {
-        std::cout << ", ";
+      bool first = true;
+      for (auto const& i : solution.value()) {
+
+        if (first) {
+          first = false;
+        } else {
+          std::cout << ", ";
+        }
+
+        std::cout << i;
       }
 
-      std::cout << i;
-    }
+      std::cout << std::endl;
 
-    std::cout << std::endl;
+    } else {
+
+      std::cout << "There is no solution." << std::endl;
+    }
 
   } catch (std::exception const& e) {
 
