@@ -5,62 +5,118 @@
  * Copyright (c) 2016 by Marcel Lippmann.  All rights reserved.               *
  *                                                                            *
  ******************************************************************************/
-#include <cstdlib>
-#include <iostream>
-#include <string>
-
-#include "PCPInstance.h"
-#include "PCPTools.h"
-#include "PCPXmlReader.h"
+#include "PCPSolver.h"
 
 using namespace pcpsolver;
 
 
-void print_usage(std::string prgName, std::string errorMsg) {
-
-  std::cout << "Usage: "   << prgName  << " [filepath]" << std::endl
-            << "  Error: " << errorMsg << std::endl;
+PCPSolver::PCPSolver(PCPInstance const& instance) : instance_(instance) {
 }
 
 
-int main(int argc, char *argv[]) {
+PCPSolver::~PCPSolver() {
+}
 
-  std::string prgName = argv[0];
 
-  if (argc != 2) {
-    print_usage(prgName, "Please specify exactly one file path.");
-    return EXIT_FAILURE;
+std::experimental::optional<std::tuple<indices_t, indices_t, wordpair_t>> PCPSolver::check_indices(indices_t const& indices,
+                                                                                                   index_t const& index,
+                                                                                                   wordpair_t const& wordpair) const {
+
+  // Get the index pair and append it to the given word pair.
+  auto const& pair = instance_.get_pair(index);
+  auto newpair = std::make_pair(wordpair.first + pair.first,
+                                wordpair.second + pair.second);
+
+  // Truncate the new word pair by dropping equal prefixes.
+  while (!newpair.first.empty() && !newpair.second.empty() &&
+          newpair.first.front() == newpair.second.front()) {
+
+    newpair.first.erase(0, 1);
+    newpair.second.erase(0, 1);
   }
 
-  std::string xmlFilepath = argv[1];
+  // Check whether words are equal, i.e. we have found a solution.
+  if (newpair.first.empty() && newpair.second.empty()) {
 
-  try {
+    return std::experimental::nullopt;
+  }
 
-    auto pcpInstance = read_pcp_instance_from_xml_file(xmlFilepath);
+  auto newIndices = indices;
+  newIndices.push_back(index);
 
-    auto solution = solve(*pcpInstance);
+  // Check whether sequence of indices cannot be extended to a solution.
+  if (!newpair.first.empty() && !newpair.second.empty()) {
 
-    std::cout << "Found solution of length " << solution.size() << ": ";
+    indices_t emptyExtensions;
+    return std::experimental::make_optional(std::make_tuple(newIndices, emptyExtensions, newpair));
+  }
 
-    bool first = true;
-    for (const auto &i : solution) {
+  // Consider all successor indices, since sequence of indices can possibly be
+  // extended to a solution.
+  auto extensions = instance_.get_list_of_indices();
 
-      if (first) {
-        first = false;
+  return std::experimental::make_optional(std::make_tuple(newIndices, extensions, newpair));
+}
+
+
+std::experimental::optional<indices_t> PCPSolver::traverse_search_space(std::vector<std::tuple<indices_t, indices_t, wordpair_t>> const& candidates) const {
+
+  // Store next candidates in a vector to apply BFS.
+  std::vector<std::tuple<indices_t, indices_t, wordpair_t>> nextCandidates;
+
+  for (auto const& candidate : candidates) {
+
+    auto const& indices = std::get<0>(candidate);
+    auto const& extensions = std::get<1>(candidate);
+    auto const& wordpair = std::get<2>(candidate);
+
+    for (auto const& extension : extensions) {
+
+      auto const& nextTuple = check_indices(indices, extension, wordpair);
+
+      // Check whether a solution was found.
+      if (!nextTuple) {
+
+        auto solution = indices;
+        solution.push_back(extension);
+
+        return std::experimental::make_optional(solution);
+
       } else {
-        std::cout << ", ";
+
+        // Add new tuple to search space if it provides extensions.
+        if (!std::get<1>(nextTuple.value()).empty()) {
+
+          nextCandidates.push_back(nextTuple.value());
+        }
       }
-
-      std::cout << i;
     }
-
-    std::cout << std::endl;
-
-  } catch (const std::exception &e) {
-
-    print_usage(prgName, e.what());
-    return EXIT_FAILURE;
   }
 
-  return EXIT_SUCCESS;
+  // No solution found (yet), try next candidates if there are any.
+  if (nextCandidates.empty()) {
+
+    // No more candidates left: there is no solution.
+    return std::experimental::nullopt;
+
+  } else {
+
+    return traverse_search_space(nextCandidates);
+  }
+}
+
+
+std::experimental::optional<indices_t> PCPSolver::solve() const {
+
+  // Start the search with an empty sequence of indices, all possible
+  // extensions, and an empty word pair.
+  std::vector<std::tuple<indices_t, indices_t, wordpair_t>> startCandidate;
+
+  indices_t emptyIndices;
+  auto startIndices = instance_.get_list_of_indices();
+  auto emptyWordpair = std::make_pair("", "");
+
+  startCandidate.push_back(std::make_tuple(emptyIndices, startIndices, emptyWordpair));
+
+  return traverse_search_space(startCandidate);
 }

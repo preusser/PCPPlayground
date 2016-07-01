@@ -8,6 +8,7 @@
 #include "PCPXmlReader.h"
 
 #include <iostream>
+#include <memory>
 #include <stdexcept>
 #include <libxml++/libxml++.h>
 
@@ -16,51 +17,49 @@
 using namespace pcpsolver;
 
 
-PCPInstance *pcpsolver::read_pcp_instance_from_xml_file(const std::string &filepath) {
+template<typename T, typename E=std::runtime_error, typename... U>
+T* throw_exception_if_nullptr(T* const arg, U&&... u) {
+
+  if (arg == nullptr) {
+    throw E(std::forward<U>(u)...);
+  }
+
+  return arg;
+}
+
+PCPInstance* pcpsolver::read_pcp_instance_from_xml_file(std::string const& filepath) {
 
   xmlpp::DomParser parser;
   parser.parse_file(filepath);
 
-  const auto doc = parser.get_document();
-  if (doc == NULL) {
-    throw std::runtime_error("Could not get document");
-  }
+  auto const doc = throw_exception_if_nullptr(parser.get_document(),
+                     "Could not get document");
 
-  const auto pNode = doc->get_root_node();
-  if (pNode == NULL) {
-    throw std::runtime_error("Could not get root node");
-  }
+  auto const root = throw_exception_if_nullptr(doc->get_root_node(),
+                       "Could not get root node");
 
-  PCPInstance *instance = new PCPInstance();
+  auto instance = std::make_unique<PCPInstance>();
 
-  for (const auto node : pNode->find("/PCPInstance/Pair")) {
+  for (auto const node : root->find("/PCPInstance/Pair")) {
 
-    const auto pair = dynamic_cast<xmlpp::Element *>(node);
-    if (pair == NULL) {
-      throw std::runtime_error("Could not read PCP pair");
-    }
+    auto const pair = throw_exception_if_nullptr(dynamic_cast<xmlpp::Element*>(node),
+                        "Could not read PCP pair");
 
-    const auto nameAttr = pair->get_attribute("name");
-    if (nameAttr == NULL) {
-      throw std::runtime_error("Found PCP pair without attribute \"name\"");
-    }
+    auto const nameAttr = throw_exception_if_nullptr(pair->get_attribute("name"),
+                            "Found PCP pair without attribute \"name\"");
 
-    const auto firstAttr = pair->get_attribute("first");
-    if (firstAttr == NULL) {
-      throw std::runtime_error("Found PCP pair without attribute \"first\"");
-    }
+    auto const firstAttr = throw_exception_if_nullptr(pair->get_attribute("first"),
+                             "Found PCP pair without attribute \"first\"");
 
-    const auto secondAttr = pair->get_attribute("second");
-    if (secondAttr == NULL) {
-      throw std::runtime_error("Found PCP pair without attribute \"second\"");
-    }
+    auto const secondAttr = throw_exception_if_nullptr(pair->get_attribute("second"),
+                              "Found PCP pair without attribute \"second\"");
 
-    const auto &index = nameAttr->get_value();
-    const auto &first = firstAttr->get_value();
-    const auto &second = secondAttr->get_value();
+    auto const& index = nameAttr->get_value();
+    auto const& first = firstAttr->get_value();
+    auto const& second = secondAttr->get_value();
 
     instance->add_pair(index, first, second);
   }
 
-  return instance;
+  return instance.release();
 }

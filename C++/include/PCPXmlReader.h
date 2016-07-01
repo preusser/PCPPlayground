@@ -22,7 +22,7 @@ namespace pcpsolver {
  * @returns The obtained PCP instance.
  * @throws Exception if the file cannot be found or parsed correctly.
  */
-PCPInstance *read_pcp_instance_from_xml_file(const std::string &filepath);
+PCPInstance* read_pcp_instance_from_xml_file(std::string const& filepath);
 
 
 } // namespace pcpsolver

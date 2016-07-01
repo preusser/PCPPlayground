@@ -18,24 +18,26 @@ PCPInstance::~PCPInstance() {
 }
 
 
-void PCPInstance::add_pair(const std::string &index, const std::string &first, const std::string &second) {
+void PCPInstance::add_pair(index_t const& index,
+                           std::string const& first,
+                           std::string const& second) {
 
   const auto pair = std::make_pair(first, second);
 
   // Add pair to list of indices only if it does not exist before.
-  if (m_instance.find(index) == m_instance.end()) {
-    m_indices.push_back(index);
+  if (instance_.find(index) == instance_.end()) {
+    indices_.push_back(index);
   }
 
   // Possibly override previous pair at index.
-  m_instance[index] = pair;
+  instance_[index] = pair;
 }
 
-const std::pair<std::string, std::string> &PCPInstance::get_pair(const std::string &index) const {
+wordpair_t const& PCPInstance::get_pair(index_t const& index) const {
 
-  return m_instance.at(index);
+  return instance_.at(index);
 }
 
-const std::vector<std::string> &PCPInstance::get_list_of_indices() const {
-  return m_indices;
+indices_t const& PCPInstance::get_list_of_indices() const {
+  return indices_;
 }
