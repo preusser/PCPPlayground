@@ -18,87 +18,105 @@ PCPSolver::~PCPSolver() {
 }
 
 
-std::experimental::optional<std::vector<indices_t>> PCPSolver::check_indices(indices_t const& indices) const {
+std::experimental::optional<std::tuple<indices_t, indices_t, wordpair_t>> PCPSolver::check_indices(indices_t const& indices,
+                                                                                                   index_t const& index,
+                                                                                                   wordpair_t const& wordpair) const {
 
-  if (!indices.empty()) {
+  // Get the index pair and append it to the given word pair.
+  auto const& pair = instance_.get_pair(index);
+  auto newpair = std::make_pair(wordpair.first + pair.first,
+                                wordpair.second + pair.second);
 
-    std::string firstW = "";
-    std::string secondW = "";
+  // Truncate the new word pair by dropping equal prefixes.
+  while (!newpair.first.empty() && !newpair.second.empty() &&
+          newpair.first.front() == newpair.second.front()) {
 
-    for (auto const& i : indices) {
-      auto const& pair = instance_.get_pair(i);
-      firstW += pair.first;
-      secondW += pair.second;
-    }
-
-    // Check whether the first word is a prefix of the second word.
-    bool const firstPrefixOfSecond = std::equal(std::begin(firstW), std::end(firstW), std::begin(secondW));
-
-    // Check whether the second word is a prefix of the first word.
-    bool const secondPrefixOfFirst = std::equal(std::begin(secondW), std::end(secondW), std::begin(firstW));
-
-    if (firstPrefixOfSecond && secondPrefixOfFirst) {
-
-      // Words are equal.
-      return std::experimental::nullopt;
-
-    } else if (!firstPrefixOfSecond && !secondPrefixOfFirst) {
-
-      // This sequence of indices cannot be extended to a solution.
-      return std::experimental::make_optional(std::vector<indices_t>());
-    }
+    newpair.first.erase(0, 1);
+    newpair.second.erase(0, 1);
   }
 
-  // Consider all successor nodes, since sequence of indices can possibly be
+  // Check whether words are equal, i.e. we have found a solution.
+  if (newpair.first.empty() && newpair.second.empty()) {
+
+    return std::experimental::nullopt;
+  }
+
+  auto newIndices = indices;
+  newIndices.push_back(index);
+
+  // Check whether sequence of indices cannot be extended to a solution.
+  if (!newpair.first.empty() && !newpair.second.empty()) {
+
+    indices_t emptyExtensions;
+    return std::experimental::make_optional(std::make_tuple(newIndices, emptyExtensions, newpair));
+  }
+
+  // Consider all successor indices, since sequence of indices can possibly be
   // extended to a solution.
-  std::vector<indices_t> nextIndices;
-  for (auto const& i : instance_.get_list_of_indices()) {
-    auto next = indices;
-    next.push_back(i);
-    nextIndices.push_back(next);
-  }
+  auto extensions = instance_.get_list_of_indices();
 
-  return std::experimental::make_optional(nextIndices);
+  return std::experimental::make_optional(std::make_tuple(newIndices, extensions, newpair));
 }
 
 
-std::experimental::optional<indices_t> PCPSolver::traverse_search_space(std::vector<indices_t>& roots) const {
+std::experimental::optional<indices_t> PCPSolver::traverse_search_space(std::vector<std::tuple<indices_t, indices_t, wordpair_t>> const& candidates) const {
 
-  std::vector<indices_t> nextRoots;
-  for (auto const& root : roots) {
+  // Store next candidates in a vector to apply BFS.
+  std::vector<std::tuple<indices_t, indices_t, wordpair_t>> nextCandidates;
 
-    auto const nextIndices = check_indices(root);
-    if (nextIndices) {
+  for (auto const& candidate : candidates) {
 
-      // Add new indices to search space
-      nextRoots.insert(std::end(nextRoots),
-                       std::begin(nextIndices.value()),
-                       std::end(nextIndices.value()));
+    auto const& indices = std::get<0>(candidate);
+    auto const& extensions = std::get<1>(candidate);
+    auto const& wordpair = std::get<2>(candidate);
 
-    } else {
+    for (auto const& extension : extensions) {
 
-      // Solution found.
-      return std::experimental::make_optional(root);
+      auto const& nextTuple = check_indices(indices, extension, wordpair);
+
+      // Check whether a solution was found.
+      if (!nextTuple) {
+
+        auto solution = indices;
+        solution.push_back(extension);
+
+        return std::experimental::make_optional(solution);
+
+      } else {
+
+        // Add new tuple to search space if it provides extensions.
+        if (!std::get<1>(nextTuple.value()).empty()) {
+
+          nextCandidates.push_back(nextTuple.value());
+        }
+      }
     }
   }
 
-  // No solution found (yet), try next roots if there are any.
-  if (nextRoots.empty()) {
+  // No solution found (yet), try next candidates if there are any.
+  if (nextCandidates.empty()) {
 
+    // No more candidates left: there is no solution.
     return std::experimental::nullopt;
 
   } else {
 
-    return traverse_search_space(nextRoots);
+    return traverse_search_space(nextCandidates);
   }
 }
 
 
 std::experimental::optional<indices_t> PCPSolver::solve() const {
 
-  std::vector<indices_t> startRoots;
-  indices_t start;
-  startRoots.push_back(start);
+  // Start the search with an empty sequence of indices, all possible
+  // extensions, and an empty word pair.
+  std::vector<std::tuple<indices_t, indices_t, wordpair_t>> startCandidate;
 
-  return traverse_search_space(startRoots);
+  indices_t emptyIndices;
+  auto startIndices = instance_.get_list_of_indices();
+  auto emptyWordpair = std::make_pair("", "");
+
+  startCandidate.push_back(std::make_tuple(emptyIndices, startIndices, emptyWordpair));
+
+  return traverse_search_space(startCandidate);
 }

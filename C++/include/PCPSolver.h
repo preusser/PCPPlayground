@@ -9,8 +9,10 @@
 #define PCPSOLVER_H
 
 #include <string>
-#include <experimental/optional>
+#include <tuple>
 #include <vector>
+
+#include <experimental/optional>
 
 #include "PCPInstance.h"
 
@@ -31,27 +33,36 @@ private:
   PCPInstance const instance_;
 
   /**
-   * This function checks whether a given list of indices is a solution to the
-   * given PCP instance.
+   * This function checks whether a given list of indices extended by a given
+   * index is a solution to the given PCP instance.
    *
-   * @param indices The list of indices to check.
+   * @param indices The list of indices.
+   * @parem index the extension to the given list of indices.
+   * @param wordpair The (truncated) word pair associated to the given list of
+   *   indices.
    * @returns If a solution is found, it returns an optional object that does not
-   *   contain a value. Otherwise it returns an optional object containing a list
-   *   of list of indices that need to be checked for a solution.  This list may
-   *   be empty.
+   *   contain a value.  Otherwise it returns an optional object containing a
+   *   tuple with the following components: indices extended by index, all
+   *   possible extensions, the truncated word pair associated to the extended
+   *   list of indices.  Note that the list of extensions may be empty.
    */
-  std::experimental::optional<std::vector<indices_t>> check_indices(indices_t const& indices) const;
+  std::experimental::optional<std::tuple<indices_t, indices_t, wordpair_t>> check_indices(indices_t const& indices,
+                                                                                          index_t const& index,
+                                                                                          wordpair_t const& wordpair) const;
 
   /**
    * This function is used to traverse the search tree using BFS.
    *
    * Note that this function does not necessarily return if there is no solution.
    *
-   * @param roots A list of sequences of indices to check.
+   * @param canditates A list of candidates for a solution consisting of: a
+   *   sequence of indices that was checked before, a list of indices to check
+   *   if the extend the given indices, and the prefix word pair obtained for
+   *   the given indices.
    * @returns If a solution is found, it returns an optional object that contains
    *    it.  Otherwise it returns an optional object without a value.
    */
-  std::experimental::optional<indices_t> traverse_search_space(std::vector<indices_t>& roots) const;
+  std::experimental::optional<indices_t> traverse_search_space(std::vector<std::tuple<indices_t, indices_t, wordpair_t>> const& candidates) const;
 
 public:
 
