@@ -18,9 +18,14 @@ namespace pcpsolver {
 
 
 /**
+ * This type defined an index.
+ */
+typedef std::string index_t;
+
+/**
  * This type defines a list of indices.
  */
-typedef std::vector<std::string> indices_t;
+typedef std::vector<index_t> indices_t;
 
 /**
  * This type defines a word pair.
@@ -66,7 +71,7 @@ public:
    * @param first The first word.
    * @param second The second word.
    */
-  void add_pair(std::string const& index,
+  void add_pair(index_t const& index,
                 std::string const& first,
                 std::string const& second);
 
@@ -77,7 +82,7 @@ public:
    * @returns The word pair at specified index.
    * @throws Exception if there is no word pair with the specified index.
    */
-  wordpair_t const& get_pair(std::string const& index) const;
+  wordpair_t const& get_pair(index_t const& index) const;
 
   /**
    * This method returns the list of indices of the PCP instance.

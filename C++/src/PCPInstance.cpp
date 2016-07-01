@@ -18,7 +18,7 @@ PCPInstance::~PCPInstance() {
 }
 
 
-void PCPInstance::add_pair(std::string const& index,
+void PCPInstance::add_pair(index_t const& index,
                            std::string const& first,
                            std::string const& second) {
 
@@ -33,7 +33,7 @@ void PCPInstance::add_pair(std::string const& index,
   instance_[index] = pair;
 }
 
-wordpair_t const& PCPInstance::get_pair(std::string const& index) const {
+wordpair_t const& PCPInstance::get_pair(index_t const& index) const {
 
   return instance_.at(index);
 }
