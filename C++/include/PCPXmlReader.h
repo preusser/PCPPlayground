@@ -9,6 +9,7 @@
 #define PCPXMLREADER_H_
 
 #include <string>
+#include <memory>
 
 #include "PCPInstance.h"
 
@@ -22,7 +23,7 @@ namespace pcpsolver {
  * @returns The obtained PCP instance.
  * @throws Exception if the file cannot be found or parsed correctly.
  */
-PCPInstance* read_pcp_instance_from_xml_file(std::string const& filepath);
+std::unique_ptr<PCPInstance> read_pcp_instance_from_xml_file(std::string const& filepath);
 
 
 } // namespace pcpsolver

@@ -8,7 +8,6 @@
 #include "PCPXmlReader.h"
 
 #include <iostream>
-#include <memory>
 #include <stdexcept>
 #include <libxml++/libxml++.h>
 
@@ -27,7 +26,7 @@ T* throw_exception_if_nullptr(T* const arg, U&&... u) {
   return arg;
 }
 
-PCPInstance* pcpsolver::read_pcp_instance_from_xml_file(std::string const& filepath) {
+std::unique_ptr<PCPInstance> pcpsolver::read_pcp_instance_from_xml_file(std::string const& filepath) {
 
   xmlpp::DomParser parser;
   parser.parse_file(filepath);
@@ -61,5 +60,5 @@ PCPInstance* pcpsolver::read_pcp_instance_from_xml_file(std::string const& filep
     instance->add_pair(index, first, second);
   }
 
-  return instance.release();
+  return  std::move(instance);
 }

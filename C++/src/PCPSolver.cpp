@@ -18,9 +18,10 @@ PCPSolver::~PCPSolver() {
 }
 
 
-std::experimental::optional<std::tuple<indices_t, indices_t, wordpair_t>> PCPSolver::check_indices(indices_t const& indices,
-                                                                                                   index_t const& index,
-                                                                                                   wordpair_t const& wordpair) const {
+std::experimental::optional<std::tuple<indices_t, indices_t, wordpair_t>>
+  PCPSolver::check_indices(indices_t const& indices,
+			   index_t const& index,
+			   wordpair_t const& wordpair) const {
 
   // Get the index pair and append it to the given word pair.
   auto const& pair = instance_.get_pair(index);
@@ -28,12 +29,11 @@ std::experimental::optional<std::tuple<indices_t, indices_t, wordpair_t>> PCPSol
                                 wordpair.second + pair.second);
 
   // Truncate the new word pair by dropping equal prefixes.
-  while (!newpair.first.empty() && !newpair.second.empty() &&
-          newpair.first.front() == newpair.second.front()) {
-
-    newpair.first.erase(0, 1);
-    newpair.second.erase(0, 1);
-  }
+  size_t const  cnt = std::mismatch(newpair.first.begin(),
+				    newpair.first.begin()+std::min(newpair.first.size(), newpair.second.size()),
+				    newpair.second.begin()).first - newpair.first.begin();
+  newpair.first.erase(0, cnt);
+  newpair.second.erase(0, cnt);
 
   // Check whether words are equal, i.e. we have found a solution.
   if (newpair.first.empty() && newpair.second.empty()) {
@@ -47,15 +47,12 @@ std::experimental::optional<std::tuple<indices_t, indices_t, wordpair_t>> PCPSol
   // Check whether sequence of indices cannot be extended to a solution.
   if (!newpair.first.empty() && !newpair.second.empty()) {
 
-    indices_t emptyExtensions;
-    return std::experimental::make_optional(std::make_tuple(newIndices, emptyExtensions, newpair));
+    return std::experimental::make_optional(std::make_tuple(indices_t(), indices_t(), std::make_pair(std::string(), std::string())));
   }
 
   // Consider all successor indices, since sequence of indices can possibly be
   // extended to a solution.
-  auto extensions = instance_.get_list_of_indices();
-
-  return std::experimental::make_optional(std::make_tuple(newIndices, extensions, newpair));
+  return std::experimental::make_optional(std::make_tuple(std::move(newIndices), instance_.get_list_of_indices(), std::move(newpair)));
 }
 
 
